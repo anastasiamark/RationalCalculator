@@ -12,6 +12,9 @@
 
 - (NSString *)stringFromRationalFraction
 {
+    if (self.denominator == 1) {
+        return [NSString stringWithFormat:@"%ld", (long)self.numerator];
+    }
     return [NSString stringWithFormat:@"%ld/%ld", (long)self.numerator, (long)self.denominator];
 }
 
@@ -19,6 +22,5 @@
 {
     return [NSString stringWithFormat:@"%@%@%@", [self stringFromRationalFraction], symbol, [fraction stringFromRationalFraction]];
 }
-
 
 @end

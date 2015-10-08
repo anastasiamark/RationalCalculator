@@ -23,25 +23,24 @@ static NSString *const kFractionDivider = @"/";
         NSInteger denominator = [fractionArray[1] integerValue];
         return [AMRationalFraction fractionWithIntegerPart:numerator andFractionalPart:denominator];
     }
+    if (fractionArray.count == 1) {
+        NSInteger numerator = [fractionArray[0] integerValue];
+        NSInteger denominator = 1;
+        return [AMRationalFraction fractionWithIntegerPart:numerator andFractionalPart:denominator];
+    }
     return nil;
 }
 
 - (AMRationalFraction *)fractionValueAfterOperation:(AMArithmeticOperation *)nextOperation
 {
     NSArray *array = [self componentsSeparatedByString:nextOperation.symbol];
-    if (array.count >= 2) {
-        return [array[0] fractionValue];
-    }
-    return nil;
+    return [array[0] fractionValue];
 }
 
 - (AMRationalFraction *)fractionValueBeforeOperation:(AMArithmeticOperation *)previousOperation
 {
     NSArray *array = [self componentsSeparatedByString:previousOperation.symbol];
-    if (array.count >= 2) {
-        return [array[array.count - 1] fractionValue];
-    }
-    return nil;
+    return [array[array.count - 1] fractionValue];
 }
 
 @end

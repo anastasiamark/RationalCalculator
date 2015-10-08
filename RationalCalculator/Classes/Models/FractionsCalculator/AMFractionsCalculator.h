@@ -10,11 +10,13 @@
 
 @class AMRationalFraction, AMArithmeticOperation;
 
+typedef void(^FractionResult)(AMRationalFraction *);
+
 @interface AMFractionsCalculator : NSObject
 
 @property (nonatomic) NSMutableArray *operations;
 
 - (void)performArithmeticalOperationWithExpression:(NSString *)expression
-                      withCompletion:(void(^)(AMRationalFraction *resultFraction))completion;
+                      withCompletion:(FractionResult)completion;
 
 @end

@@ -15,6 +15,7 @@
 
 + (instancetype)fractionWithIntegerPart:(NSInteger)intPart andFractionalPart:(NSInteger)fractPart;
 
+- (void)reduceFraction;
 - (NSInteger)calculateGCDForNumber1:(NSInteger)num1 andNumber2:(NSInteger)num2;
 - (NSInteger)calculateLCMForNumber1:(NSInteger)num1 andNumber2:(NSInteger)num2;
 

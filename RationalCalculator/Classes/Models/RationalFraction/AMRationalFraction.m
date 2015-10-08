@@ -37,9 +37,9 @@ static NSInteger const kFractionInitialValue = 1.f;
     self = [super init];
     if (self) {
         _numerator = intPart;
-        _denominator = fractPart;
+        _denominator = fractPart; 
         
-        [self reduceFraction];
+        //[self reduceFraction];
         
     }
     return self;
@@ -103,7 +103,7 @@ static NSInteger const kFractionInitialValue = 1.f;
 - (NSInteger)calculateGCDForNumber1:(NSInteger)num1 andNumber2:(NSInteger)num2
 {
     while (num2 != 0) {
-        NSInteger rest = num1 % num2;
+        NSInteger rest = labs(num1 % num2);
         num1 = num2;
         num2 = rest;
     }
