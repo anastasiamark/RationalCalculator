@@ -24,7 +24,7 @@ static NSString *const kZeroCharacter = @"0";
 
 @interface AMCalculatorController ()
 
-@property (weak, nonatomic) IBOutlet UILabel *expression;
+@property (weak, nonatomic) IBOutlet UILabel *expressionLabel;
 
 @property (nonatomic) AMFractionsCalculator *calculator;
 
@@ -65,6 +65,8 @@ static NSString *const kZeroCharacter = @"0";
     self.expression.text = @"";
     [self.calculator.operations removeAllObjects];
 }
+
+
 
 #pragma mark - Update Label
 
