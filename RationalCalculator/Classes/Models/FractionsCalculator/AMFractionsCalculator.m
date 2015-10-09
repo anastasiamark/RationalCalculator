@@ -37,7 +37,7 @@
 #pragma mark - Actions
 
 - (void)performArithmeticalOperationWithExpression:(NSString *)expression
-                      withCompletion:(FractionResult)completion
+                                    withCompletion:(FractionResult)completion
 {
     self.expression = expression;
     self.result = completion;
@@ -50,7 +50,7 @@
     }
 }
 
-#pragma mark - Perform Operations 
+#pragma mark - Perform Operations
 
 - (void)performOperations
 {
@@ -69,6 +69,7 @@
                 if (self.operations.count == 1) {
                     return;
                 }
+                break;
             }
         }
     }
@@ -78,6 +79,7 @@
 {
     for (AMArithmeticOperation *operation in self.operations) {
         NSArray *operands = [self.expression componentsSeparatedByString:operation.symbol];
+        operands = [self modifyOperandsArray:operands];
         if (operands.count == 2) {
             AMRationalFraction *fraction1 = [operands[0] fractionValue];
             AMRationalFraction *fraction2 = [operands[1] fractionValue];
@@ -123,8 +125,9 @@
     
     AMRationalFraction *fraction1 = nil;
     AMRationalFraction *fraction2 = nil;
-
+    
     NSArray *operands = [self.expression componentsSeparatedByString:operation.symbol];
+    operands = [self modifyOperandsArray:operands];
     if (operands.count >= 2) {
         if (index == 0) {
             fraction1 = [operands[0] fractionValue];
@@ -144,6 +147,17 @@
     }
     
     return @[fraction1, fraction2];
+}
+
+- (NSArray *)modifyOperandsArray:(NSArray *)array
+{
+    if (![array[0] isEqualToString:@""]) {
+        return array;
+    }
+    NSString *string = @"-";
+    string = [string stringByAppendingString:array[1]];
+    NSArray *modifyArray = @[string, array[2]];
+    return [NSArray arrayWithArray:modifyArray];
 }
 
 #pragma mark - Arithmetical Operations

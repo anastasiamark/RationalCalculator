@@ -18,17 +18,10 @@ static NSString *const kFractionDivider = @"/";
 - (AMRationalFraction *)fractionValue
 {
     NSArray *fractionArray = [self componentsSeparatedByString:kFractionDivider];
-    if (fractionArray.count == 2) {
-        NSInteger numerator = [fractionArray[0] integerValue];
-        NSInteger denominator = [fractionArray[1] integerValue];
-        return [AMRationalFraction fractionWithIntegerPart:numerator andFractionalPart:denominator];
-    }
-    if (fractionArray.count == 1) {
-        NSInteger numerator = [fractionArray[0] integerValue];
-        NSInteger denominator = 1;
-        return [AMRationalFraction fractionWithIntegerPart:numerator andFractionalPart:denominator];
-    }
-    return nil;
+    
+    NSInteger numerator = [fractionArray[0] integerValue];
+    NSInteger denominator = fractionArray.count == 1 ? 1 : [fractionArray[1] integerValue];
+    return [AMRationalFraction fractionWithIntegerPart:numerator andFractionalPart:denominator];
 }
 
 - (AMRationalFraction *)fractionValueAfterOperation:(AMArithmeticOperation *)nextOperation

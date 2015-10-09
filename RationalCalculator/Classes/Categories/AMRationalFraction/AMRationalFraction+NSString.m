@@ -15,6 +15,9 @@
     if (self.denominator == 1) {
         return [NSString stringWithFormat:@"%ld", (long)self.numerator];
     }
+    if (self.numerator == 0) {
+        return [NSString stringWithFormat:@"%ld", (long)self.numerator];
+    }
     return [NSString stringWithFormat:@"%ld/%ld", (long)self.numerator, (long)self.denominator];
 }
 

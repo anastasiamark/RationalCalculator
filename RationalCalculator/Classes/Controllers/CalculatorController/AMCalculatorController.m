@@ -9,9 +9,10 @@
 #import "AMCalculatorController.h"
 
 #import "AMCalculatorButton.h"
+
 #import "AMArithmeticOperation.h"
-#import "AMFractionsCalculator.h"
 #import "AMRationalFraction.h"
+#import "AMFractionsCalculator.h"
 
 #import "AMRationalFraction+NSString.h"
 #import "NSString+AMFractionValue.h"
@@ -49,24 +50,36 @@ static NSString *const kZeroCharacter = @"0";
 {
     [self updateLabelWithButton:button];
 }
+
 - (IBAction)cleanOneSymbol:(AMCalculatorButton *)button
 {
     if (![self isExpressionEmpty]) {
-        NSString *newExpression = [self.expression.text substringToIndex:[self.expression.text length]-1];
+        NSString *expression = [self.expressionLabel.text substringToIndex:[self.expressionLabel.text length]-1];
         if ([self isSymbol:[self lastSymbolInExpression]]) {
             [self removeLastOperation];
         }
-        self.expression.text = [NSString stringWithString:newExpression];
+        self.expressionLabel.text = [NSString stringWithString:expression];
     }
 }
 
 - (IBAction)cleanLabelAction:(AMCalculatorButton *)button
 {
-    self.expression.text = @"";
+    self.expressionLabel.text = @"";
     [self.calculator.operations removeAllObjects];
 }
 
-
+- (IBAction)changeSignAction:(AMCalculatorButton *)button
+{
+    if (![self isOperationsEmpty] || [self isExpressionEmpty]) {
+        return;
+    }
+    if ([self.expressionLabel.text hasPrefix:@"-"]) {
+        self.expressionLabel.text = [self.expressionLabel.text substringFromIndex:1];
+    } else {
+        NSString *expression = @"-";
+        self.expressionLabel.text = [expression stringByAppendingString:self.expressionLabel.text];
+    }
+}
 
 #pragma mark - Update Label
 
@@ -76,27 +89,25 @@ static NSString *const kZeroCharacter = @"0";
     
     if (![self isEqualSymbol:title]) {
         [self updateExprssionWithButton:button];
-    } else {
+    } else if (![self isExpressionLabelZero]){
         [self updateLabelAfterCalculation];
     }
 }
 
 - (void)updateLabelAfterCalculation
 {
-    __block NSString *resultLabelString = [NSString string];
-    
     if (![self isOperationsEmpty]) {
-        [self.calculator performArithmeticalOperationWithExpression:self.expression.text withCompletion:^(AMRationalFraction *resultFraction) {
+        __weak typeof(self)weakSelf = self;
+        [self.calculator performArithmeticalOperationWithExpression:self.expressionLabel.text withCompletion:^(AMRationalFraction *resultFraction) {
             
-            resultLabelString = [resultFraction stringFromRationalFraction];
-            [self.calculator.operations removeAllObjects];
+            NSString *resultLabel = [resultFraction stringFromRationalFraction];
+            weakSelf.expressionLabel.text = [NSString stringWithString:resultLabel];
+            [weakSelf.calculator.operations removeAllObjects];
         }];
-        
-        self.expression.text = [NSString stringWithString:resultLabelString];
     } else {
-        AMRationalFraction *fraction = [self.expression.text fractionValue];
+        AMRationalFraction *fraction = [self.expressionLabel.text fractionValue];
         [fraction reduceFraction];
-        self.expression.text = [NSString stringWithString:[fraction stringFromRationalFraction]];
+        self.expressionLabel.text = [NSString stringWithString:[fraction stringFromRationalFraction]];
     }
 }
 
@@ -111,13 +122,16 @@ static NSString *const kZeroCharacter = @"0";
     }
 }
 
-#pragma mark - Control Correct Input 
+#pragma mark - Control Correct Input
 
 - (void)updateExprssionWithButton:(AMCalculatorButton *)button
 {
     NSString *title = button.titleLabel.text;
     
     if (![self isExpressionEmpty]) {
+        if ([self isZero:self.expressionLabel.text]) {
+            self.expressionLabel.text = @"";
+        }
         if ([self isNumber:title]) {
             [self addSymbolToExpression:title];
             return;
@@ -131,7 +145,7 @@ static NSString *const kZeroCharacter = @"0";
             [self addOperationsWithButton:button];
             return;
         }
-        if ([self isDividingSymbol:title] && [self isCorrectPositionForSymbol]) {
+        if ([self isDividingSymbol:title] && [self isCorrectPositionForSymbol] && [self isNoExcessDividingSymbol]) {
             [self addSymbolToExpression:title];
             return;
         }
@@ -143,7 +157,12 @@ static NSString *const kZeroCharacter = @"0";
 
 - (BOOL)isCorrectPositionForZero
 {
-    return [self isNumber:[self lastSymbolInExpression]];
+    return [self isCorrectPositionForSymbol] && ![self isExpressionLabelZero];
+}
+
+- (BOOL)isExpressionLabelZero
+{
+    return [self.expressionLabel.text isEqualToString:@"0"];
 }
 
 - (BOOL)isCorrectPositionForSymbol
@@ -156,33 +175,50 @@ static NSString *const kZeroCharacter = @"0";
     return (![self isZero:title] && ![self isSymbol:title] && ![self isDividingSymbol:title]);
 }
 
+- (BOOL)isNoExcessDividingSymbol
+{
+    if ([self isOperationsEmpty]) {
+        NSCharacterSet *expressionSet = [NSCharacterSet characterSetWithCharactersInString:self.expressionLabel.text];
+        NSRange dividingSymbolRange = [kDividingCharacter rangeOfCharacterFromSet:expressionSet];
+        return dividingSymbolRange.location == NSNotFound;
+    }
+    AMArithmeticOperation *lastOperation = [self.calculator.operations objectAtIndex:self.calculator.operations.count -1];
+    NSString *lastSymbol = lastOperation.symbol;
+    NSRange lastSymbolRange = [self.expressionLabel.text rangeOfString:lastSymbol options:NSBackwardsSearch];
+    NSString *string = [self.expressionLabel.text substringFromIndex:lastSymbolRange.location];
+    NSCharacterSet *stringSet = [NSCharacterSet characterSetWithCharactersInString:string];
+    NSRange dividingSymbolRange = [kDividingCharacter rangeOfCharacterFromSet:stringSet];
+    return dividingSymbolRange.location == NSNotFound;
+}
+
 #pragma  mark - Helper Methods
 
 - (void)removeLastOperation
 {
     if (![self isOperationsEmpty]) {
-        [self.calculator.operations removeObjectAtIndex: self.calculator.operations.count - 1 ];
+        [self.calculator.operations removeObjectAtIndex:self.calculator.operations.count - 1 ];
     }
 }
 
 - (void)addSymbolToExpression:(NSString *)symbol
 {
-    self.expression.text = [self.expression.text stringByAppendingString:symbol];
+    self.expressionLabel.text = [self.expressionLabel.text stringByAppendingString:symbol];
 }
 
 - (NSString *)lastSymbolInExpression
 {
-    if (![self isExpressionEmpty]) {
-        NSRange lastSymbol;
-        lastSymbol.length = 1;
-        lastSymbol.location = [self.expression.text length]-1;
-        
-        return [self.expression.text substringWithRange:lastSymbol];
+    if ([self isExpressionEmpty]) {
+        return nil;
     }
-    return nil;
+    
+    NSRange lastSymbolRange;
+    lastSymbolRange.length = 1;
+    lastSymbolRange.location = [self.expressionLabel.text length]-1;
+    
+    return [self.expressionLabel.text substringWithRange:lastSymbolRange];
 }
 
-#pragma mark - Boolian Methods
+#pragma mark - Boolean Methods
 
 - (BOOL)isZero:(NSString *)title
 {
@@ -196,6 +232,7 @@ static NSString *const kZeroCharacter = @"0";
     
     return numberRange.location != NSNotFound;
 }
+
 - (BOOL)isSymbol:(NSString *)title
 {
     NSCharacterSet *symbolSet = [NSCharacterSet characterSetWithCharactersInString:kSymbolsCharacters];
@@ -216,12 +253,12 @@ static NSString *const kZeroCharacter = @"0";
 
 - (BOOL)isExpressionEmpty
 {
-    return self.expression.text.length == 0;
+    return !self.expressionLabel.text.length;
 }
 
 - (BOOL)isOperationsEmpty
 {
-    return self.calculator.operations.count == 0;
+    return !self.calculator.operations.count;
 }
 
 @end
