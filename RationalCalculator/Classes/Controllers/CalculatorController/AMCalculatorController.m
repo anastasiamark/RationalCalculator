@@ -8,11 +8,12 @@
 
 #import "AMCalculatorController.h"
 
-#import "AMCalculatorButton.h"
+#import "AMCalculatorCell.h"
 
 #import "AMArithmeticOperation.h"
 #import "AMRationalFraction.h"
 #import "AMFractionsCalculator.h"
+#import "AMCalculatorItem.h"
 
 #import "AMRationalFraction+NSString.h"
 #import "NSString+AMFractionValue.h"
@@ -23,15 +24,120 @@ static NSString *const kEqualCharacter = @"=";
 static NSString *const kDividingCharacter = @"/";
 static NSString *const kZeroCharacter = @"0";
 
-@interface AMCalculatorController ()
+@interface AMCalculatorController () <UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout>
 
 @property (weak, nonatomic) IBOutlet UILabel *expressionLabel;
 
+@property (nonatomic) NSArray *calculatorItemsList;
 @property (nonatomic) AMFractionsCalculator *calculator;
 
 @end
 
 @implementation AMCalculatorController
+
+#pragma mark - UICollectionViewDataSource
+
+- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
+{
+    return self.calculatorItemsList.count;
+}
+
+- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
+{
+    AMCalculatorCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:NSStringFromClass([AMCalculatorCell class]) forIndexPath:indexPath];
+    
+    AMCalculatorItem *currentItem = self.calculatorItemsList[indexPath.item];
+    [cell configureWithCalculatorItem:currentItem];
+    
+    return cell;
+}
+
+#pragma mark - UICollectionViewDelegate
+
+- (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath
+{
+    [collectionView deselectItemAtIndexPath:indexPath animated:YES];
+    
+    AMCalculatorItem *currentItem = self.calculatorItemsList[indexPath.item];
+    
+    switch (currentItem.type) {
+        case AMCalculatorItemTypeChangeSign: {
+            [self changeSign];
+            break;
+        }
+        case AMCalculatorItemTypeCleanAll: {
+            [self cleanExpressionLabel];
+            break;
+        }
+        case AMCalculatorItemTypeCleanOneSymbol: {
+            [self cleanOneSymbol];
+            break;
+        }
+        case AMCalculatorItemTypeSymbolOrNumber: {
+            [self updateLabelWithItem:currentItem];
+            break;
+        }
+            
+        default:
+            break;
+    }
+}
+
+#pragma mark - UICollectionViewDelegateFlowLayout
+
+- (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath
+{
+    CGFloat width = CGRectGetWidth(collectionView.frame) - ((UICollectionViewFlowLayout *)collectionView.collectionViewLayout).minimumInteritemSpacing;
+    
+    CGFloat cellWidth = width/4.f;
+    CGFloat cellHeiht = cellWidth;
+    
+    return CGSizeMake(cellHeiht, cellWidth);
+}
+
+- (CGFloat)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout minimumInteritemSpacingForSectionAtIndex:(NSInteger)section
+{
+    return 2.f;
+}
+
+#pragma mark - Filling Calculator Items List
+
+- (NSArray *)calculatorItemsArray
+{
+    AMCalculatorItem *item1 = [AMCalculatorItem itemWithTitle:@"7" andType:AMCalculatorItemTypeSymbolOrNumber];
+    AMCalculatorItem *item2 = [AMCalculatorItem itemWithTitle:@"8" andType:AMCalculatorItemTypeSymbolOrNumber];
+    AMCalculatorItem *item3 = [AMCalculatorItem itemWithTitle:@"9" andType:AMCalculatorItemTypeSymbolOrNumber];
+    
+    AMCalculatorItem *item4 = [AMCalculatorItem itemWithTitle:@":" andType:AMCalculatorItemTypeSymbolOrNumber];
+    item4.operationType = AMArithmeticOperationDivision;
+    
+    AMCalculatorItem *item5 = [AMCalculatorItem itemWithTitle:@"4" andType:AMCalculatorItemTypeSymbolOrNumber];
+    AMCalculatorItem *item6 = [AMCalculatorItem itemWithTitle:@"5" andType:AMCalculatorItemTypeSymbolOrNumber];
+    AMCalculatorItem *item7 = [AMCalculatorItem itemWithTitle:@"6" andType:AMCalculatorItemTypeSymbolOrNumber];
+    
+    AMCalculatorItem *item8 = [AMCalculatorItem itemWithTitle:@"*" andType:AMCalculatorItemTypeSymbolOrNumber];
+    item8.operationType = AMArithmeticOperationMultiplication;
+    
+    AMCalculatorItem *item9 = [AMCalculatorItem itemWithTitle:@"1" andType:AMCalculatorItemTypeSymbolOrNumber];
+    AMCalculatorItem *item10 = [AMCalculatorItem itemWithTitle:@"2" andType:AMCalculatorItemTypeSymbolOrNumber];
+    AMCalculatorItem *item11 = [AMCalculatorItem itemWithTitle:@"3" andType:AMCalculatorItemTypeSymbolOrNumber];
+    
+    AMCalculatorItem *item12 = [AMCalculatorItem itemWithTitle:@"-" andType:AMCalculatorItemTypeSymbolOrNumber];
+    item12.operationType = AMArithmeticOperationSubtraction;
+    
+    AMCalculatorItem *item13 = [AMCalculatorItem itemWithTitle:@"0" andType:AMCalculatorItemTypeSymbolOrNumber];
+    AMCalculatorItem *item14 = [AMCalculatorItem itemWithTitle:@"/" andType:AMCalculatorItemTypeSymbolOrNumber];
+    AMCalculatorItem *item15 = [AMCalculatorItem itemWithTitle:@"=" andType:AMCalculatorItemTypeSymbolOrNumber];
+    
+    AMCalculatorItem *item16 = [AMCalculatorItem itemWithTitle:@"+" andType:AMCalculatorItemTypeSymbolOrNumber];
+    item16.operationType = AMArithmeticOperationAddition;
+    
+    AMCalculatorItem *item17 = [AMCalculatorItem itemWithTitle:@"Clean" andType:AMCalculatorItemTypeCleanAll];
+    AMCalculatorItem *item18 = [AMCalculatorItem itemWithTitle:@"<<" andType:AMCalculatorItemTypeCleanOneSymbol];
+    AMCalculatorItem *item19 = [AMCalculatorItem itemWithTitle:@"+/-" andType:AMCalculatorItemTypeChangeSign];
+    
+    return @[item1, item2, item3, item4, item5, item6, item7, item8, item9, item10, item11, item12, item13, item14, item15, item16, item17, item18, item19];
+}
 
 #pragma mark - Lifecycle
 
@@ -44,14 +150,19 @@ static NSString *const kZeroCharacter = @"0";
     return self;
 }
 
-#pragma mark - Actions
+#pragma  mark - Accessors
 
-- (IBAction)buttonTappedCalculatorAction:(AMCalculatorButton *)button
+- (NSArray *)calculatorItemsList
 {
-    [self updateLabelWithButton:button];
+    if (!_calculatorItemsList) {
+        _calculatorItemsList = [self calculatorItemsArray];
+    }
+    return _calculatorItemsList;
 }
 
-- (IBAction)cleanOneSymbol:(AMCalculatorButton *)button
+#pragma mark - Actions
+
+- (void)cleanOneSymbol
 {
     if (![self isExpressionEmpty]) {
         NSString *expression = [self.expressionLabel.text substringToIndex:[self.expressionLabel.text length]-1];
@@ -62,13 +173,13 @@ static NSString *const kZeroCharacter = @"0";
     }
 }
 
-- (IBAction)cleanLabelAction:(AMCalculatorButton *)button
+- (void)cleanExpressionLabel
 {
     self.expressionLabel.text = @"";
     [self.calculator.operations removeAllObjects];
 }
 
-- (IBAction)changeSignAction:(AMCalculatorButton *)button
+- (void)changeSign
 {
     if (![self isOperationsEmpty] || [self isExpressionEmpty]) {
         return;
@@ -83,12 +194,12 @@ static NSString *const kZeroCharacter = @"0";
 
 #pragma mark - Update Label
 
-- (void)updateLabelWithButton:(AMCalculatorButton *)button
+- (void)updateLabelWithItem:(AMCalculatorItem *)item
 {
-    NSString *title = button.titleLabel.text;
+    NSString *title = item.title;
     
     if (![self isEqualSymbol:title]) {
-        [self updateExprssionWithButton:button];
+        [self updateExprssionWithCalculatorItem:item];
     } else if (![self isExpressionLabelZero]){
         [self updateLabelAfterCalculation];
     }
@@ -113,20 +224,20 @@ static NSString *const kZeroCharacter = @"0";
 
 #pragma mark - Add Operations
 
-- (void)addOperationsWithButton:(AMCalculatorButton *)button
+- (void)addOperationsWithCalculatorItem:(AMCalculatorItem *)item
 {
-    NSString *title = button.titleLabel.text;
+    NSString *title = item.title;
     if ([self isSymbol:title]) {
-        AMArithmeticOperation *operation = [AMArithmeticOperation operationWithType:(AMArithmeticOperationType)button.tag];
+        AMArithmeticOperation *operation = [AMArithmeticOperation operationWithType:item.operationType];
         [self.calculator.operations addObject:operation];
     }
 }
 
 #pragma mark - Control Correct Input
 
-- (void)updateExprssionWithButton:(AMCalculatorButton *)button
+- (void)updateExprssionWithCalculatorItem:(AMCalculatorItem *)item
 {
-    NSString *title = button.titleLabel.text;
+    NSString *title = item.title;
     
     if (![self isExpressionEmpty]) {
         if ([self isZero:self.expressionLabel.text]) {
@@ -142,7 +253,7 @@ static NSString *const kZeroCharacter = @"0";
         }
         if ([self isSymbol:title] && [self isCorrectPositionForSymbol]) {
             [self addSymbolToExpression:title];
-            [self addOperationsWithButton:button];
+            [self addOperationsWithCalculatorItem:item];
             return;
         }
         if ([self isDividingSymbol:title] && [self isCorrectPositionForSymbol] && [self isNoExcessDividingSymbol]) {

@@ -16,6 +16,8 @@
 		587130BB1BBB2BF70041146C /* AMRationalFraction.m in Sources */ = {isa = PBXBuildFile; fileRef = 587130BA1BBB2BF70041146C /* AMRationalFraction.m */; settings = {ASSET_TAGS = (); }; };
 		587130BE1BBB2E520041146C /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 587130BC1BBB2E520041146C /* LaunchScreen.storyboard */; settings = {ASSET_TAGS = (); }; };
 		587130C31BBB310D0041146C /* AMCalculatorController.m in Sources */ = {isa = PBXBuildFile; fileRef = 587130C21BBB310D0041146C /* AMCalculatorController.m */; settings = {ASSET_TAGS = (); }; };
+		589665151BCC50C0007022C6 /* AMCalculatorCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 589665141BCC50C0007022C6 /* AMCalculatorCell.m */; settings = {ASSET_TAGS = (); }; };
+		5896651C1BCC525D007022C6 /* AMCalculatorItem.m in Sources */ = {isa = PBXBuildFile; fileRef = 5896651B1BCC525D007022C6 /* AMCalculatorItem.m */; settings = {ASSET_TAGS = (); }; };
 		58B1DB551BBFECC600ACF9A3 /* AMCalculatorButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 58B1DB541BBFECC600ACF9A3 /* AMCalculatorButton.m */; settings = {ASSET_TAGS = (); }; };
 		58B1DB5A1BBFED7100ACF9A3 /* AMArithmeticOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 58B1DB591BBFED7100ACF9A3 /* AMArithmeticOperation.m */; settings = {ASSET_TAGS = (); }; };
 		58B1DB611BBFEF9300ACF9A3 /* AMAdditionOperation.m in Sources */ = {isa = PBXBuildFile; fileRef = 58B1DB601BBFEF9300ACF9A3 /* AMAdditionOperation.m */; settings = {ASSET_TAGS = (); }; };
@@ -42,6 +44,10 @@
 		587130BD1BBB2E520041146C /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		587130C11BBB310D0041146C /* AMCalculatorController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AMCalculatorController.h; path = Classes/Controllers/CalculatorController/AMCalculatorController.h; sourceTree = "<group>"; };
 		587130C21BBB310D0041146C /* AMCalculatorController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AMCalculatorController.m; path = Classes/Controllers/CalculatorController/AMCalculatorController.m; sourceTree = "<group>"; };
+		589665131BCC50C0007022C6 /* AMCalculatorCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AMCalculatorCell.h; path = Classes/Cells/CalculatorCell/AMCalculatorCell.h; sourceTree = "<group>"; };
+		589665141BCC50C0007022C6 /* AMCalculatorCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AMCalculatorCell.m; path = Classes/Cells/CalculatorCell/AMCalculatorCell.m; sourceTree = "<group>"; };
+		5896651A1BCC525D007022C6 /* AMCalculatorItem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AMCalculatorItem.h; path = Classes/Models/CalculatorItem/AMCalculatorItem.h; sourceTree = "<group>"; };
+		5896651B1BCC525D007022C6 /* AMCalculatorItem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AMCalculatorItem.m; path = Classes/Models/CalculatorItem/AMCalculatorItem.m; sourceTree = "<group>"; };
 		58B1DB531BBFECC600ACF9A3 /* AMCalculatorButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AMCalculatorButton.h; path = Classes/Views/CalculatorButton/AMCalculatorButton.h; sourceTree = "<group>"; };
 		58B1DB541BBFECC600ACF9A3 /* AMCalculatorButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AMCalculatorButton.m; path = Classes/Views/CalculatorButton/AMCalculatorButton.m; sourceTree = "<group>"; };
 		58B1DB581BBFED7100ACF9A3 /* AMArithmeticOperation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AMArithmeticOperation.h; path = Classes/Models/ArithmeticOperation/AMArithmeticOperation.h; sourceTree = "<group>"; };
@@ -135,6 +141,7 @@
 		587130B51BBB295C0041146C /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				589665111BCC4D1D007022C6 /* Cells */,
 				58B1DB6F1BC0280500ACF9A3 /* Catigories */,
 				584463691BBC80C000FB6329 /* Views */,
 				587130BF1BBB2EE50041146C /* Controllers */,
@@ -146,6 +153,7 @@
 		587130B61BBB29670041146C /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				589665161BCC51AD007022C6 /* CalculatorItem */,
 				58B1DB6B1BC0211000ACF9A3 /* FractionsCalculator */,
 				58B1DB571BBFED2100ACF9A3 /* ArithmeticOperation */,
 				587130B81BBB2B750041146C /* RationalFraction */,
@@ -177,6 +185,32 @@
 				587130C21BBB310D0041146C /* AMCalculatorController.m */,
 			);
 			name = CalculatorController;
+			sourceTree = "<group>";
+		};
+		589665111BCC4D1D007022C6 /* Cells */ = {
+			isa = PBXGroup;
+			children = (
+				589665121BCC4D28007022C6 /* CalculatorCell */,
+			);
+			name = Cells;
+			sourceTree = "<group>";
+		};
+		589665121BCC4D28007022C6 /* CalculatorCell */ = {
+			isa = PBXGroup;
+			children = (
+				589665131BCC50C0007022C6 /* AMCalculatorCell.h */,
+				589665141BCC50C0007022C6 /* AMCalculatorCell.m */,
+			);
+			name = CalculatorCell;
+			sourceTree = "<group>";
+		};
+		589665161BCC51AD007022C6 /* CalculatorItem */ = {
+			isa = PBXGroup;
+			children = (
+				5896651A1BCC525D007022C6 /* AMCalculatorItem.h */,
+				5896651B1BCC525D007022C6 /* AMCalculatorItem.m */,
+			);
+			name = CalculatorItem;
 			sourceTree = "<group>";
 		};
 		58B1DB561BBFECD300ACF9A3 /* CalculatorButton */ = {
@@ -351,6 +385,8 @@
 				58B1DB6A1BBFF00600ACF9A3 /* AMDivisionOperation.m in Sources */,
 				5871309E1BBB28BC0041146C /* AppDelegate.m in Sources */,
 				58B1DB611BBFEF9300ACF9A3 /* AMAdditionOperation.m in Sources */,
+				5896651C1BCC525D007022C6 /* AMCalculatorItem.m in Sources */,
+				589665151BCC50C0007022C6 /* AMCalculatorCell.m in Sources */,
 				5871309B1BBB28BC0041146C /* main.m in Sources */,
 				58B1DB551BBFECC600ACF9A3 /* AMCalculatorButton.m in Sources */,
 				58B1DB731BC028B800ACF9A3 /* NSString+AMFractionValue.m in Sources */,
