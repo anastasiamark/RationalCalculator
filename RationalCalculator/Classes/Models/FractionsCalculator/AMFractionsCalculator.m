@@ -160,6 +160,11 @@
     return [NSArray arrayWithArray:modifyArray];
 }
 
+- (BOOL)isOperationsEmpty
+{
+    return !self.operations.count;
+}
+
 #pragma mark - Arithmetical Operations
 
 - (AMRationalFraction *)performArithmeticalOperationWithType:(AMArithmeticOperationType)operationType forFractionFirst:(AMRationalFraction *)fraction1 andFractionSecond:(AMRationalFraction *)fraction2

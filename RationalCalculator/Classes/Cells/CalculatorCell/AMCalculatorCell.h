@@ -2,7 +2,7 @@
 //  AMCalculatorCell.h
 //  RationalCalculator
 //
-//  Created by Eugenity on 12.10.15.
+//  Created by Mark on 12.10.15.
 //  Copyright © 2015 ThinkMobiles. All rights reserved.
 //
 

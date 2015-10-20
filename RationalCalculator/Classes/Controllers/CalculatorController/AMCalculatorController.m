@@ -26,14 +26,43 @@ static NSString *const kZeroCharacter = @"0";
 
 @interface AMCalculatorController () <UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout>
 
-@property (weak, nonatomic) IBOutlet UILabel *expressionLabel;
+@property (nonatomic, strong) IBOutlet UICollectionView *collectionView;
 
-@property (nonatomic) NSArray *calculatorItemsList;
+@property (nonatomic) NSMutableArray *calculatorItemsList;
 @property (nonatomic) AMFractionsCalculator *calculator;
+@property (nonatomic) AMCalculatorItem *expressionItem;
 
 @end
 
 @implementation AMCalculatorController
+
+#pragma  mark - Accessors
+
+- (NSArray *)calculatorItemsList
+{
+    if (!_calculatorItemsList) {
+        _calculatorItemsList = [self calculatorItemsArray];
+    }
+    return _calculatorItemsList;
+}
+
+#pragma mark - Lifecycle
+
+- (instancetype)initWithCoder:(NSCoder *)coder
+{
+    self = [super initWithCoder:coder];
+    if (self) {
+        _calculator = [[AMFractionsCalculator alloc] init];
+    }
+    return self;
+}
+
+#pragma mark - View Lifecycle
+
+- (void)viewDidLoad
+{
+    [super viewDidLoad];
+}
 
 #pragma mark - UICollectionViewDataSource
 
@@ -57,7 +86,7 @@ static NSString *const kZeroCharacter = @"0";
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath
 {
     [collectionView deselectItemAtIndexPath:indexPath animated:YES];
-    
+
     AMCalculatorItem *currentItem = self.calculatorItemsList[indexPath.item];
     
     switch (currentItem.type) {
@@ -73,7 +102,8 @@ static NSString *const kZeroCharacter = @"0";
             [self cleanOneSymbol];
             break;
         }
-        case AMCalculatorItemTypeSymbolOrNumber: {
+        case AMCalculatorItemTypeSymbol:
+        case AMCalculatorItemTypeNumber: {
             [self updateLabelWithItem:currentItem];
             break;
         }
@@ -81,83 +111,85 @@ static NSString *const kZeroCharacter = @"0";
         default:
             break;
     }
+    [self reloadFirstItem];
 }
 
 #pragma mark - UICollectionViewDelegateFlowLayout
 
+static CGFloat const kMinimumSpace = 2.f;
 - (CGSize)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout sizeForItemAtIndexPath:(NSIndexPath *)indexPath
 {
-    CGFloat width = CGRectGetWidth(collectionView.frame) - ((UICollectionViewFlowLayout *)collectionView.collectionViewLayout).minimumInteritemSpacing;
+    CGFloat cellWidth;
+    CGFloat cellHeiht;
+    CGFloat width = CGRectGetWidth(collectionView.frame);
+    CGFloat widthWithoutMinInteritemSpacing = width - ((UICollectionViewFlowLayout *)collectionView.collectionViewLayout).minimumInteritemSpacing;
+    AMCalculatorItem *currentItem = self.calculatorItemsList[indexPath.item];
+    if (currentItem.type == AMCalculatorItemTypeExpression) {
+        cellHeiht = width/(2 * kMinimumSpace);
+        cellWidth = width;
+    } else if (currentItem.type == AMCalculatorItemTypeCleanAll) {
+        cellHeiht = widthWithoutMinInteritemSpacing/(2 * kMinimumSpace);
+        cellWidth = width/kMinimumSpace;
+    } else {
+        cellWidth = widthWithoutMinInteritemSpacing/(2 * kMinimumSpace);
+        cellHeiht = cellWidth;
+    }
     
-    CGFloat cellWidth = width/4.f;
-    CGFloat cellHeiht = cellWidth;
-    
-    return CGSizeMake(cellHeiht, cellWidth);
+    return CGSizeMake(cellWidth, cellHeiht);
+}
+
+- (CGFloat)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout minimumLineSpacingForSectionAtIndex:(NSInteger)section
+{
+    return kMinimumSpace;
 }
 
 - (CGFloat)collectionView:(UICollectionView *)collectionView layout:(UICollectionViewLayout*)collectionViewLayout minimumInteritemSpacingForSectionAtIndex:(NSInteger)section
 {
-    return 2.f;
+    return kMinimumSpace;
 }
 
 #pragma mark - Filling Calculator Items List
 
-- (NSArray *)calculatorItemsArray
+- (NSMutableArray *)calculatorItemsArray
 {
-    AMCalculatorItem *item1 = [AMCalculatorItem itemWithTitle:@"7" andType:AMCalculatorItemTypeSymbolOrNumber];
-    AMCalculatorItem *item2 = [AMCalculatorItem itemWithTitle:@"8" andType:AMCalculatorItemTypeSymbolOrNumber];
-    AMCalculatorItem *item3 = [AMCalculatorItem itemWithTitle:@"9" andType:AMCalculatorItemTypeSymbolOrNumber];
+    AMCalculatorItem *item0 = [AMCalculatorItem itemWithTitle:@"" andType:AMCalculatorItemTypeExpression];
+    self.expressionItem = item0;
     
-    AMCalculatorItem *item4 = [AMCalculatorItem itemWithTitle:@":" andType:AMCalculatorItemTypeSymbolOrNumber];
+    AMCalculatorItem *item1 = [AMCalculatorItem itemWithTitle:@"7" andType:AMCalculatorItemTypeNumber];
+    AMCalculatorItem *item2 = [AMCalculatorItem itemWithTitle:@"8" andType:AMCalculatorItemTypeNumber];
+    AMCalculatorItem *item3 = [AMCalculatorItem itemWithTitle:@"9" andType:AMCalculatorItemTypeNumber];
+    
+    AMCalculatorItem *item4 = [AMCalculatorItem itemWithTitle:@":" andType:AMCalculatorItemTypeSymbol];
     item4.operationType = AMArithmeticOperationDivision;
     
-    AMCalculatorItem *item5 = [AMCalculatorItem itemWithTitle:@"4" andType:AMCalculatorItemTypeSymbolOrNumber];
-    AMCalculatorItem *item6 = [AMCalculatorItem itemWithTitle:@"5" andType:AMCalculatorItemTypeSymbolOrNumber];
-    AMCalculatorItem *item7 = [AMCalculatorItem itemWithTitle:@"6" andType:AMCalculatorItemTypeSymbolOrNumber];
+    AMCalculatorItem *item5 = [AMCalculatorItem itemWithTitle:@"4" andType:AMCalculatorItemTypeNumber];
+    AMCalculatorItem *item6 = [AMCalculatorItem itemWithTitle:@"5" andType:AMCalculatorItemTypeNumber];
+    AMCalculatorItem *item7 = [AMCalculatorItem itemWithTitle:@"6" andType:AMCalculatorItemTypeNumber];
     
-    AMCalculatorItem *item8 = [AMCalculatorItem itemWithTitle:@"*" andType:AMCalculatorItemTypeSymbolOrNumber];
+    AMCalculatorItem *item8 = [AMCalculatorItem itemWithTitle:@"*" andType:AMCalculatorItemTypeSymbol];
     item8.operationType = AMArithmeticOperationMultiplication;
     
-    AMCalculatorItem *item9 = [AMCalculatorItem itemWithTitle:@"1" andType:AMCalculatorItemTypeSymbolOrNumber];
-    AMCalculatorItem *item10 = [AMCalculatorItem itemWithTitle:@"2" andType:AMCalculatorItemTypeSymbolOrNumber];
-    AMCalculatorItem *item11 = [AMCalculatorItem itemWithTitle:@"3" andType:AMCalculatorItemTypeSymbolOrNumber];
+    AMCalculatorItem *item9 = [AMCalculatorItem itemWithTitle:@"1" andType:AMCalculatorItemTypeNumber];
+    AMCalculatorItem *item10 = [AMCalculatorItem itemWithTitle:@"2" andType:AMCalculatorItemTypeNumber];
+    AMCalculatorItem *item11 = [AMCalculatorItem itemWithTitle:@"3" andType:AMCalculatorItemTypeNumber];
     
-    AMCalculatorItem *item12 = [AMCalculatorItem itemWithTitle:@"-" andType:AMCalculatorItemTypeSymbolOrNumber];
+    AMCalculatorItem *item12 = [AMCalculatorItem itemWithTitle:@"-" andType:AMCalculatorItemTypeSymbol];
     item12.operationType = AMArithmeticOperationSubtraction;
     
-    AMCalculatorItem *item13 = [AMCalculatorItem itemWithTitle:@"0" andType:AMCalculatorItemTypeSymbolOrNumber];
-    AMCalculatorItem *item14 = [AMCalculatorItem itemWithTitle:@"/" andType:AMCalculatorItemTypeSymbolOrNumber];
-    AMCalculatorItem *item15 = [AMCalculatorItem itemWithTitle:@"=" andType:AMCalculatorItemTypeSymbolOrNumber];
+    AMCalculatorItem *item13 = [AMCalculatorItem itemWithTitle:@"0" andType:AMCalculatorItemTypeNumber];
+    AMCalculatorItem *item14 = [AMCalculatorItem itemWithTitle:@"/" andType:AMCalculatorItemTypeNumber];
+    AMCalculatorItem *item15 = [AMCalculatorItem itemWithTitle:@"=" andType:AMCalculatorItemTypeNumber];
     
-    AMCalculatorItem *item16 = [AMCalculatorItem itemWithTitle:@"+" andType:AMCalculatorItemTypeSymbolOrNumber];
+    AMCalculatorItem *item16 = [AMCalculatorItem itemWithTitle:@"+" andType:AMCalculatorItemTypeSymbol];
     item16.operationType = AMArithmeticOperationAddition;
     
     AMCalculatorItem *item17 = [AMCalculatorItem itemWithTitle:@"Clean" andType:AMCalculatorItemTypeCleanAll];
+    item17.operationType = AMCalculatorItemTypeCleanAll;
+    
     AMCalculatorItem *item18 = [AMCalculatorItem itemWithTitle:@"<<" andType:AMCalculatorItemTypeCleanOneSymbol];
     AMCalculatorItem *item19 = [AMCalculatorItem itemWithTitle:@"+/-" andType:AMCalculatorItemTypeChangeSign];
-    
-    return @[item1, item2, item3, item4, item5, item6, item7, item8, item9, item10, item11, item12, item13, item14, item15, item16, item17, item18, item19];
-}
-
-#pragma mark - Lifecycle
-
-- (instancetype)initWithCoder:(NSCoder *)coder
-{
-    self = [super initWithCoder:coder];
-    if (self) {
-        _calculator = [[AMFractionsCalculator alloc] init];
-    }
-    return self;
-}
-
-#pragma  mark - Accessors
-
-- (NSArray *)calculatorItemsList
-{
-    if (!_calculatorItemsList) {
-        _calculatorItemsList = [self calculatorItemsArray];
-    }
-    return _calculatorItemsList;
+    NSArray *itemsArray = @[item0, item1, item2, item3, item4, item5, item6, item7, item8, item9, item10, item11, item12, item13, item14, item15, item16, item17, item18, item19];
+    return [NSMutableArray arrayWithArray:itemsArray];
 }
 
 #pragma mark - Actions
@@ -165,18 +197,20 @@ static NSString *const kZeroCharacter = @"0";
 - (void)cleanOneSymbol
 {
     if (![self isExpressionEmpty]) {
-        NSString *expression = [self.expressionLabel.text substringToIndex:[self.expressionLabel.text length]-1];
+        NSString *expression = [self.expressionItem.title substringToIndex:[self.expressionItem.title length]-1];
         if ([self isSymbol:[self lastSymbolInExpression]]) {
             [self removeLastOperation];
         }
-        self.expressionLabel.text = [NSString stringWithString:expression];
+        self.expressionItem.title = [NSString stringWithString:expression];
     }
 }
 
 - (void)cleanExpressionLabel
 {
-    self.expressionLabel.text = @"";
-    [self.calculator.operations removeAllObjects];
+    if (![self isExpressionEmpty]) {
+        self.expressionItem.title = @"";
+        [self.calculator.operations removeAllObjects];
+    }
 }
 
 - (void)changeSign
@@ -184,15 +218,20 @@ static NSString *const kZeroCharacter = @"0";
     if (![self isOperationsEmpty] || [self isExpressionEmpty]) {
         return;
     }
-    if ([self.expressionLabel.text hasPrefix:@"-"]) {
-        self.expressionLabel.text = [self.expressionLabel.text substringFromIndex:1];
+    if ([self.expressionItem.title hasPrefix:@"-"]) {
+        self.expressionItem.title = [self.expressionItem.title substringFromIndex:1];
     } else {
         NSString *expression = @"-";
-        self.expressionLabel.text = [expression stringByAppendingString:self.expressionLabel.text];
+        self.expressionItem.title = [expression stringByAppendingString:self.expressionItem.title];
     }
 }
 
 #pragma mark - Update Label
+
+- (void)reloadFirstItem
+{
+    [self.collectionView reloadItemsAtIndexPaths:@[[NSIndexPath indexPathForItem:0 inSection:0]]];
+}
 
 - (void)updateLabelWithItem:(AMCalculatorItem *)item
 {
@@ -200,7 +239,7 @@ static NSString *const kZeroCharacter = @"0";
     
     if (![self isEqualSymbol:title]) {
         [self updateExprssionWithCalculatorItem:item];
-    } else if (![self isExpressionLabelZero]){
+    } else if (![self isExpressionLabelZero] && ![self isExpressionEmpty]){
         [self updateLabelAfterCalculation];
     }
 }
@@ -209,16 +248,16 @@ static NSString *const kZeroCharacter = @"0";
 {
     if (![self isOperationsEmpty]) {
         __weak typeof(self)weakSelf = self;
-        [self.calculator performArithmeticalOperationWithExpression:self.expressionLabel.text withCompletion:^(AMRationalFraction *resultFraction) {
+        [self.calculator performArithmeticalOperationWithExpression:self.expressionItem.title withCompletion:^(AMRationalFraction *resultFraction) {
             
             NSString *resultLabel = [resultFraction stringFromRationalFraction];
-            weakSelf.expressionLabel.text = [NSString stringWithString:resultLabel];
+            weakSelf.expressionItem.title = [NSString stringWithString:resultLabel];
             [weakSelf.calculator.operations removeAllObjects];
         }];
     } else {
-        AMRationalFraction *fraction = [self.expressionLabel.text fractionValue];
+        AMRationalFraction *fraction = [self.expressionItem.title fractionValue];
         [fraction reduceFraction];
-        self.expressionLabel.text = [NSString stringWithString:[fraction stringFromRationalFraction]];
+        self.expressionItem.title = [NSString stringWithString:[fraction stringFromRationalFraction]];
     }
 }
 
@@ -238,10 +277,9 @@ static NSString *const kZeroCharacter = @"0";
 - (void)updateExprssionWithCalculatorItem:(AMCalculatorItem *)item
 {
     NSString *title = item.title;
-    
     if (![self isExpressionEmpty]) {
-        if ([self isZero:self.expressionLabel.text]) {
-            self.expressionLabel.text = @"";
+        if ([self isZero:self.expressionItem.title]) {
+            self.expressionItem.title = @"";
         }
         if ([self isNumber:title]) {
             [self addSymbolToExpression:title];
@@ -266,42 +304,6 @@ static NSString *const kZeroCharacter = @"0";
     }
 }
 
-- (BOOL)isCorrectPositionForZero
-{
-    return [self isCorrectPositionForSymbol] && ![self isExpressionLabelZero];
-}
-
-- (BOOL)isExpressionLabelZero
-{
-    return [self.expressionLabel.text isEqualToString:@"0"];
-}
-
-- (BOOL)isCorrectPositionForSymbol
-{
-    return ([self isNumber:[self lastSymbolInExpression]]) || ([self isZero:[self lastSymbolInExpression]]);
-}
-
-- (BOOL)isCorrectPositionForFirstCharacter:(NSString *)title
-{
-    return (![self isZero:title] && ![self isSymbol:title] && ![self isDividingSymbol:title]);
-}
-
-- (BOOL)isNoExcessDividingSymbol
-{
-    if ([self isOperationsEmpty]) {
-        NSCharacterSet *expressionSet = [NSCharacterSet characterSetWithCharactersInString:self.expressionLabel.text];
-        NSRange dividingSymbolRange = [kDividingCharacter rangeOfCharacterFromSet:expressionSet];
-        return dividingSymbolRange.location == NSNotFound;
-    }
-    AMArithmeticOperation *lastOperation = [self.calculator.operations objectAtIndex:self.calculator.operations.count -1];
-    NSString *lastSymbol = lastOperation.symbol;
-    NSRange lastSymbolRange = [self.expressionLabel.text rangeOfString:lastSymbol options:NSBackwardsSearch];
-    NSString *string = [self.expressionLabel.text substringFromIndex:lastSymbolRange.location];
-    NSCharacterSet *stringSet = [NSCharacterSet characterSetWithCharactersInString:string];
-    NSRange dividingSymbolRange = [kDividingCharacter rangeOfCharacterFromSet:stringSet];
-    return dividingSymbolRange.location == NSNotFound;
-}
-
 #pragma  mark - Helper Methods
 
 - (void)removeLastOperation
@@ -313,7 +315,7 @@ static NSString *const kZeroCharacter = @"0";
 
 - (void)addSymbolToExpression:(NSString *)symbol
 {
-    self.expressionLabel.text = [self.expressionLabel.text stringByAppendingString:symbol];
+    self.expressionItem.title = [self.expressionItem.title stringByAppendingString:symbol];
 }
 
 - (NSString *)lastSymbolInExpression
@@ -321,12 +323,11 @@ static NSString *const kZeroCharacter = @"0";
     if ([self isExpressionEmpty]) {
         return nil;
     }
-    
     NSRange lastSymbolRange;
     lastSymbolRange.length = 1;
-    lastSymbolRange.location = [self.expressionLabel.text length]-1;
+    lastSymbolRange.location = [self.expressionItem.title length]-1;
     
-    return [self.expressionLabel.text substringWithRange:lastSymbolRange];
+    return [self.expressionItem.title substringWithRange:lastSymbolRange];
 }
 
 #pragma mark - Boolean Methods
@@ -364,12 +365,47 @@ static NSString *const kZeroCharacter = @"0";
 
 - (BOOL)isExpressionEmpty
 {
-    return !self.expressionLabel.text.length;
+    return !self.expressionItem.title.length;
 }
 
 - (BOOL)isOperationsEmpty
 {
     return !self.calculator.operations.count;
+}
+- (BOOL)isCorrectPositionForZero
+{
+    return [self isCorrectPositionForSymbol] && ![self isExpressionLabelZero];
+}
+
+- (BOOL)isExpressionLabelZero
+{
+    return [self.expressionItem.title isEqualToString:@"0"];
+}
+
+- (BOOL)isCorrectPositionForSymbol
+{
+    return ([self isNumber:[self lastSymbolInExpression]]) || ([self isZero:[self lastSymbolInExpression]]);
+}
+
+- (BOOL)isCorrectPositionForFirstCharacter:(NSString *)title
+{
+    return (![self isZero:title] && ![self isSymbol:title] && ![self isDividingSymbol:title]);
+}
+
+- (BOOL)isNoExcessDividingSymbol
+{
+    if ([self isOperationsEmpty]) {
+        NSCharacterSet *expressionSet = [NSCharacterSet characterSetWithCharactersInString:self.expressionItem.title];
+        NSRange dividingSymbolRange = [kDividingCharacter rangeOfCharacterFromSet:expressionSet];
+        return dividingSymbolRange.location == NSNotFound;
+    }
+    AMArithmeticOperation *lastOperation = [self.calculator.operations objectAtIndex:self.calculator.operations.count -1];
+    NSString *lastSymbol = lastOperation.symbol;
+    NSRange lastSymbolRange = [self.self.expressionItem.title rangeOfString:lastSymbol options:NSBackwardsSearch];
+    NSString *string = [self.expressionItem.title substringFromIndex:lastSymbolRange.location];
+    NSCharacterSet *stringSet = [NSCharacterSet characterSetWithCharactersInString:string];
+    NSRange dividingSymbolRange = [kDividingCharacter rangeOfCharacterFromSet:stringSet];
+    return dividingSymbolRange.location == NSNotFound;
 }
 
 @end

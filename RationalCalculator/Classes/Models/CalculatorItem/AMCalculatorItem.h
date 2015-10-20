@@ -2,7 +2,7 @@
 //  AMCalculatorItem.h
 //  RationalCalculator
 //
-//  Created by Eugenity on 12.10.15.
+//  Created by Mark on 12.10.15.
 //  Copyright © 2015 ThinkMobiles. All rights reserved.
 //
 
@@ -11,7 +11,9 @@
 #import "AMArithmeticOperation.h"
 
 typedef enum : NSUInteger {
-    AMCalculatorItemTypeSymbolOrNumber,
+    AMCalculatorItemTypeExpression,
+    AMCalculatorItemTypeSymbol,
+    AMCalculatorItemTypeNumber,
     AMCalculatorItemTypeCleanOneSymbol,
     AMCalculatorItemTypeCleanAll,
     AMCalculatorItemTypeChangeSign,

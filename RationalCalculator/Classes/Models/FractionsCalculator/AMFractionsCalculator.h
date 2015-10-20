@@ -18,5 +18,6 @@ typedef void(^FractionResult)(AMRationalFraction *);
 
 - (void)performArithmeticalOperationWithExpression:(NSString *)expression
                       withCompletion:(FractionResult)completion;
+- (BOOL)isOperationsEmpty;
 
 @end

@@ -11,6 +11,8 @@
 #import "AMRationalFraction.h"
 #import "AMArithmeticOperation.h"
 
+#import <objc/runtime.h>
+
 static NSString *const kFractionDivider = @"/";
 
 @implementation NSString (AMFractionValue)
